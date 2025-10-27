@@ -51,4 +51,4 @@ Servez le dossier via un petit serveur web local (ex. `npx serve .` ou `python -
 - Le bouton « Charger depuis cards.json » relit directement le fichier du dépôt pour partir de la base actuelle.
 
 ## Version
-Footer mis à jour : **Version 1.2.0**.
+Footer mis à jour : **Version 1.3.0** avec la mention « Le contenu de ce module est entièrement sous la responsabilité de l’établissement ».
