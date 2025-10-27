@@ -1,0 +1,44 @@
+{
+  "cards": [
+    {
+      "question": "La Tour Eiffel mesure exactement 324 mètres de hauteur",
+      "answer": true,
+      "explanation": "Correct ! La Tour Eiffel mesure 324 mètres avec ses antennes."
+    },
+    {
+      "question": "Les dauphins sont des poissons",
+      "answer": false,
+      "explanation": "Faux ! Les dauphins sont des mammifères marins, pas des poissons."
+    },
+    {
+      "question": "Il y a 7 continents sur Terre",
+      "answer": true,
+      "explanation": "Vrai ! Les 7 continents sont : Afrique, Antarctique, Asie, Europe, Amérique du Nord, Océanie et Amérique du Sud."
+    },
+    {
+      "question": "La Grande Muraille de Chine est visible depuis l'espace à l'œil nu",
+      "answer": false,
+      "explanation": "Faux ! C'est un mythe populaire. La Grande Muraille n'est pas visible depuis l'espace à l'œil nu."
+    },
+    {
+      "question": "Le cœur humain a 4 chambres",
+      "answer": true,
+      "explanation": "Correct ! Le cœur a 2 oreillettes et 2 ventricules, soit 4 chambres au total."
+    },
+    {
+      "question": "Les chauves-souris sont aveugles",
+      "answer": false,
+      "explanation": "Faux ! Les chauves-souris voient très bien. Elles utilisent aussi l'écholocation."
+    },
+    {
+      "question": "L'eau bout à 100°C au niveau de la mer",
+      "answer": true,
+      "explanation": "Vrai ! À pression atmosphérique normale, l'eau bout à 100°C."
+    },
+    {
+      "question": "Les humains n'utilisent que 10% de leur cerveau",
+      "answer": false,
+      "explanation": "Faux ! C'est un mythe. Nous utilisons pratiquement tout notre cerveau."
+    }
+  ]
+}

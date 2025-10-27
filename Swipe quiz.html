@@ -539,56 +539,46 @@
                 this.isAnimating = false;
                 this.feedbackState = null;
                 this.startPos = { x: 0, y: 0 };
-                
-                this.questions = [
-                    {
-                        question: "La Tour Eiffel mesure exactement 324 mètres de hauteur",
-                        answer: true,
-                        explanation: "Correct ! La Tour Eiffel mesure 324 mètres avec ses antennes."
-                    },
-                    {
-                        question: "Les dauphins sont des poissons",
-                        answer: false,
-                        explanation: "Faux ! Les dauphins sont des mammifères marins, pas des poissons."
-                    },
-                    {
-                        question: "Il y a 7 continents sur Terre",
-                        answer: true,
-                        explanation: "Vrai ! Les 7 continents sont : Afrique, Antarctique, Asie, Europe, Amérique du Nord, Océanie et Amérique du Sud."
-                    },
-                    {
-                        question: "La Grande Muraille de Chine est visible depuis l'espace à l'œil nu",
-                        answer: false,
-                        explanation: "Faux ! C'est un mythe populaire. La Grande Muraille n'est pas visible depuis l'espace à l'œil nu."
-                    },
-                    {
-                        question: "Le cœur humain a 4 chambres",
-                        answer: true,
-                        explanation: "Correct ! Le cœur a 2 oreillettes et 2 ventricules, soit 4 chambres au total."
-                    },
-                    {
-                        question: "Les chauves-souris sont aveugles",
-                        answer: false,
-                        explanation: "Faux ! Les chauves-souris voient très bien. Elles utilisent aussi l'écholocation."
-                    },
-                    {
-                        question: "L'eau bout à 100°C au niveau de la mer",
-                        answer: true,
-                        explanation: "Vrai ! À pression atmosphérique normale, l'eau bout à 100°C."
-                    },
-                    {
-                        question: "Les humains n'utilisent que 10% de leur cerveau",
-                        answer: false,
-                        explanation: "Faux ! C'est un mythe. Nous utilisons pratiquement tout notre cerveau."
-                    }
-                ];
-                
-                this.init();
-            }
-            
-            init() {
+                this.questions = [];
+                this.isLoading = true;
+                this.error = null;
+
                 this.render();
                 this.bindEvents();
+                this.loadQuestions();
+            }
+
+            async loadQuestions() {
+                try {
+                    const response = await fetch('cards.json', { cache: 'no-store' });
+                    if (!response.ok) {
+                        throw new Error(`Impossible de charger les cartes (statut ${response.status})`);
+                    }
+
+                    const data = await response.json();
+                    const cards = Array.isArray(data) ? data : data.cards;
+
+                    if (!Array.isArray(cards) || cards.length === 0) {
+                        throw new Error('Aucune carte disponible. Vérifiez le fichier cards.json');
+                    }
+
+                    this.questions = cards;
+                    this.currentCard = 0;
+                    this.score = 0;
+                    this.gameEnded = false;
+                    this.dragOffset = { x: 0, y: 0 };
+                    this.answered = [];
+                    this.isAnimating = false;
+                    this.feedbackState = null;
+                    this.isLoading = false;
+                    this.error = null;
+                    this.render();
+                } catch (error) {
+                    console.error('Erreur lors du chargement des cartes :', error);
+                    this.error = error.message || 'Erreur inconnue lors du chargement des cartes.';
+                    this.isLoading = false;
+                    this.render();
+                }
             }
             
             handleStart(clientX, clientY) {
@@ -799,7 +789,29 @@
             
             render() {
                 const app = document.getElementById('app');
-                
+                if (!app) return;
+
+                if (this.isLoading) {
+                    app.innerHTML = this.renderLoadingScreen();
+                    return;
+                }
+
+                if (this.error) {
+                    app.innerHTML = this.renderErrorScreen();
+                    this.bindRetryEvent();
+                    return;
+                }
+
+                if (!this.questions.length) {
+                    app.innerHTML = this.renderEmptyState();
+                    this.bindRetryEvent();
+                    return;
+                }
+
+                if (this.currentCard >= this.questions.length) {
+                    this.currentCard = this.questions.length - 1;
+                }
+
                 if (this.gameEnded) {
                     app.innerHTML = this.renderEndScreen();
                     this.bindEndScreenEvents();
@@ -807,6 +819,76 @@
                     app.innerHTML = this.renderGameScreen();
                     this.bindGameEvents();
                 }
+            }
+
+            renderLoadingScreen() {
+                return `
+                    <div class="container">
+                        <div class="end-screen">
+                            <div class="trophy" aria-hidden="true">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2v20" />
+                                    <path d="M5 7h14" />
+                                    <path d="M9 4h6" />
+                                </svg>
+                            </div>
+                            <h2 class="end-title">Chargement des cartes...</h2>
+                            <p class="final-score">Merci de patienter quelques instants.</p>
+                        </div>
+                        <footer class="footer light">Version 1.1.0</footer>
+                    </div>
+                `;
+            }
+
+            renderErrorScreen() {
+                return `
+                    <div class="container">
+                        <div class="end-screen">
+                            <div class="trophy" aria-hidden="true">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 6 6 18" />
+                                    <path d="M6 6l12 12" />
+                                </svg>
+                            </div>
+                            <h2 class="end-title">Erreur de chargement</h2>
+                            <p class="final-score">${this.error}</p>
+                            <button id="retry-btn" class="reset-btn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                    <path d="M3 3v5h5" />
+                                </svg>
+                                Réessayer
+                            </button>
+                        </div>
+                        <footer class="footer light">Version 1.1.0</footer>
+                    </div>
+                `;
+            }
+
+            renderEmptyState() {
+                return `
+                    <div class="container">
+                        <div class="end-screen">
+                            <div class="trophy" aria-hidden="true">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2 2 7l10 5 10-5-10-5Z" />
+                                    <path d="m2 17 10 5 10-5" />
+                                    <path d="m2 12 10 5 10-5" />
+                                </svg>
+                            </div>
+                            <h2 class="end-title">Aucune carte trouvée</h2>
+                            <p class="final-score">Ajoutez des cartes dans <strong>cards.json</strong> puis rechargez le quiz.</p>
+                            <button id="retry-btn" class="reset-btn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                    <path d="M3 3v5h5" />
+                                </svg>
+                                Recharger
+                            </button>
+                        </div>
+                        <footer class="footer light">Version 1.1.0</footer>
+                    </div>
+                `;
             }
             
             renderEndScreen() {
@@ -845,14 +927,18 @@
                                 Rejouer
                             </button>
                         </div>
-                        <footer class="footer light">Version 1.0.1</footer>
+                        <footer class="footer light">Version 1.1.0</footer>
                     </div>
                 `;
             }
 
             renderGameScreen() {
                 const question = this.questions[this.currentCard];
-                
+
+                if (!question) {
+                    return this.renderEmptyState();
+                }
+
                 return `
                     <div class="container">
                         <div class="header">
@@ -952,7 +1038,7 @@
                         <p class="help-text">
                             Glissez la carte ou utilisez les boutons pour répondre
                         </p>
-                        <footer class="footer">Version 1.0.1</footer>
+                        <footer class="footer">Version 1.1.0</footer>
                     </div>
                 `;
             }
@@ -961,6 +1047,18 @@
                 const resetBtn = document.getElementById('reset-btn');
                 if (resetBtn) {
                     resetBtn.addEventListener('click', () => this.resetGame());
+                }
+            }
+
+            bindRetryEvent() {
+                const retryBtn = document.getElementById('retry-btn');
+                if (retryBtn) {
+                    retryBtn.addEventListener('click', () => {
+                        this.isLoading = true;
+                        this.error = null;
+                        this.render();
+                        this.loadQuestions();
+                    });
                 }
             }
             
