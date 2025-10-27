@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Swipe - Vrai ou Faux</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #9333ea 0%, #ec4899 50%, #fb923c 100%);
+            overflow-x: hidden;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            z-index: 20;
+            position: relative;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            color: white;
+        }
+
+        .stat {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+
+        .card-area {
+            position: relative;
+            width: 100%;
+            max-width: 20rem;
+            height: 24rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .feedback-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            transition: all 0.5s;
+            backdrop-filter: blur(4px);
+        }
+
+        .feedback-overlay.correct {
+            background: rgba(34, 197, 94, 0.9);
+            animation: pulse 2s infinite;
+        }
+
+        .feedback-overlay.incorrect {
+            background: rgba(239, 68, 68, 0.9);
+            animation: pulse 2s infinite;
+        }
+
+        .feedback-content {
+            text-align: center;
+            color: white;
+            animation: bounce 1s infinite;
+        }
+
+        .feedback-icon {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            animation: spin 1s linear infinite;
+        }
+
+        .feedback-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .feedback-subtext {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .next-card {
+            position: absolute;
+            inset: 0;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: scale(0.95);
+            opacity: 0.5;
+        }
+
+        .next-card-text {
+            font-size: 1.125rem;
+            text-align: center;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .indicator {
+            position: absolute;
+            top: 1.5rem;
+            padding: 1rem;
+            border-radius: 1rem;
+            font-weight: bold;
+            font-size: 1.125rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 4px solid white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .indicator.left {
+            left: 1.5rem;
+            background: #ef4444;
+            color: white;
+            transform: rotate(-12deg);
+        }
+
+        .indicator.right {
+            right: 1.5rem;
+            background: #22c55e;
+            color: white;
+            transform: rotate(12deg);
+        }
+
+        .main-card {
+            position: relative;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            padding: 2rem;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .main-card:active {
+            cursor: grabbing;
+        }
+
+        .main-card.feedback-correct {
+            box-shadow: 0 0 0 4px #22c55e;
+        }
+
+        .main-card.feedback-incorrect {
+            box-shadow: 0 0 0 4px #ef4444;
+        }
+
+        .card-indicator {
+            width: 3rem;
+            height: 0.25rem;
+            background: #d1d5db;
+            border-radius: 9999px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .question {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .instructions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .instruction {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.6;
+        }
+
+        .instruction-icon {
+            background: #f3f4f6;
+            padding: 0.75rem;
+            border-radius: 50%;
+            margin-bottom: 0.5rem;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .instruction.left .instruction-icon {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #ef4444;
+        }
+
+        .instruction.right .instruction-icon {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #22c55e;
+        }
+
+        .instruction-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .instruction-label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-top: 0.125rem;
+        }
+
+        .instruction.left .instruction-label {
+            color: #ef4444;
+        }
+
+        .instruction.right .instruction-label {
+            color: #22c55e;
+        }
+
+        .divider {
+            width: 1px;
+            height: 3rem;
+            background: #e5e7eb;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            z-index: 20;
+            position: relative;
+        }
+
+        .action-btn {
+            background: #ef4444;
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            font-weight: 600;
+            transition: all 0.2s;
+            transform: scale(1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            width: 4rem;
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn.true {
+            background: #22c55e;
+        }
+
+        .action-btn.true:hover {
+            background: #16a34a;
+        }
+
+        .action-btn.false:hover {
+            background: #dc2626;
+        }
+
+        .help-text {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #fbbf24;
+            border-radius: 50%;
+            animation: ping 1s infinite;
+        }
+
+        /* End screen styles */
+        .end-screen {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            border-radius: 1rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            padding: 2rem;
+            width: 100%;
+            max-width: 28rem;
+            text-align: center;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .trophy {
+            font-size: 4rem;
+            color: #eab308;
+            margin-bottom: 1rem;
+        }
+
+        .end-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .final-score {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .score-highlight {
+            font-weight: bold;
+            color: #9333ea;
+        }
+
+        .results {
+            text-align: left;
+            max-height: 15rem;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-item {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+        }
+
+        .result-item.correct {
+            background: #dcfce7;
+            border-left: 4px solid #22c55e;
+        }
+
+        .result-item.incorrect {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+
+        .result-question {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .result-explanation {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 auto;
+            font-size: 1rem;
+        }
+
+        .reset-btn:hover {
+            background: linear-gradient(135deg, #7c3aed, #db2777);
+            transform: scale(1.05);
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% { transform: translateY(0); }
+            40%, 43% { transform: translateY(-10px); }
+            70% { transform: translateY(-5px); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes ping {
+            75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .no-select {
+            user-select: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                gap: 1rem;
+            }
+            
+            .card-area {
+                max-width: 18rem;
+                height: 22rem;
+            }
+            
+            .main-card {
+                padding: 1.5rem;
+            }
+            
+            .question {
+                font-size: 1.125rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        class SwipeQuizGame {
+            constructor() {
+                this.currentCard = 0;
+                this.score = 0;
+                this.gameEnded = false;
+                this.dragOffset = { x: 0, y: 0 };
+                this.isDragging = false;
+                this.answered = [];
+                this.isAnimating = false;
+                this.feedbackState = null;
+                this.startPos = { x: 0, y: 0 };
+                
+                this.questions = [
+                    {
+                        question: "La Tour Eiffel mesure exactement 324 mètres de hauteur",
+                        answer: true,
+                        explanation: "Correct ! La Tour Eiffel mesure 324 mètres avec ses antennes."
+                    },
+                    {
+                        question: "Les dauphins sont des poissons",
+                        answer: false,
+                        explanation: "Faux ! Les dauphins sont des mammifères marins, pas des poissons."
+                    },
+                    {
+                        question: "Il y a 7 continents sur Terre",
+                        answer: true,
+                        explanation: "Vrai ! Les 7 continents sont : Afrique, Antarctique, Asie, Europe, Amérique du Nord, Océanie et Amérique du Sud."
+                    },
+                    {
+                        question: "La Grande Muraille de Chine est visible depuis l'espace à l'œil nu",
+                        answer: false,
+                        explanation: "Faux ! C'est un mythe populaire. La Grande Muraille n'est pas visible depuis l'espace à l'œil nu."
+                    },
+                    {
+                        question: "Le cœur humain a 4 chambres",
+                        answer: true,
+                        explanation: "Correct ! Le cœur a 2 oreillettes et 2 ventricules, soit 4 chambres au total."
+                    },
+                    {
+                        question: "Les chauves-souris sont aveugles",
+                        answer: false,
+                        explanation: "Faux ! Les chauves-souris voient très bien. Elles utilisent aussi l'écholocation."
+                    },
+                    {
+                        question: "L'eau bout à 100°C au niveau de la mer",
+                        answer: true,
+                        explanation: "Vrai ! À pression atmosphérique normale, l'eau bout à 100°C."
+                    },
+                    {
+                        question: "Les humains n'utilisent que 10% de leur cerveau",
+                        answer: false,
+                        explanation: "Faux ! C'est un mythe. Nous utilisons pratiquement tout notre cerveau."
+                    }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.render();
+                this.bindEvents();
+            }
+            
+            handleStart(clientX, clientY) {
+                if (this.isAnimating || this.gameEnded) return;
+                this.isDragging = true;
+                this.startPos = { x: clientX, y: clientY };
+                this.dragOffset = { x: 0, y: 0 };
+                document.body.classList.add('no-select');
+            }
+            
+            handleMove(clientX, clientY) {
+                if (!this.isDragging || this.isAnimating || this.gameEnded) return;
+                
+                const deltaX = clientX - this.startPos.x;
+                const deltaY = clientY - this.startPos.y;
+                
+                this.dragOffset = { x: deltaX, y: deltaY * 0.3 };
+                this.updateCardStyle();
+                this.updateIndicators();
+            }
+            
+            handleEnd() {
+                if (!this.isDragging || this.isAnimating || this.gameEnded) return;
+                
+                const threshold = 80;
+                const velocity = Math.abs(this.dragOffset.x);
+                
+                if (Math.abs(this.dragOffset.x) > threshold || velocity > 50) {
+                    const userAnswer = this.dragOffset.x > 0;
+                    this.animateCardExit(userAnswer);
+                } else {
+                    this.dragOffset = { x: 0, y: 0 };
+                    this.updateCardStyle();
+                    this.updateIndicators();
+                }
+                this.isDragging = false;
+                document.body.classList.remove('no-select');
+            }
+            
+            animateCardExit(userAnswer) {
+                this.isAnimating = true;
+                const correct = userAnswer === this.questions[this.currentCard].answer;
+                
+                // BUG FIX: S'assurer que le feedback correspond à la justesse de la réponse
+                this.feedbackState = correct ? 'correct' : 'incorrect';
+                this.showFeedback();
+                
+                const exitX = userAnswer ? 400 : -400;
+                this.dragOffset = { x: exitX, y: this.dragOffset.y };
+                this.updateCardStyle();
+                
+                setTimeout(() => {
+                    this.handleAnswer(userAnswer);
+                    this.isAnimating = false;
+                    this.feedbackState = null;
+                    this.hideFeedback();
+                }, 1200);
+            }
+            
+            handleAnswer(userAnswer) {
+                const correct = userAnswer === this.questions[this.currentCard].answer;
+                if (correct) {
+                    this.score++;
+                }
+                
+                this.answered.push({
+                    question: this.questions[this.currentCard].question,
+                    userAnswer,
+                    correct,
+                    explanation: this.questions[this.currentCard].explanation
+                });
+
+                if (this.currentCard < this.questions.length - 1) {
+                    this.currentCard++;
+                    this.dragOffset = { x: 0, y: 0 };
+                    this.render();
+                } else {
+                    this.gameEnded = true;
+                    this.render();
+                }
+            }
+            
+            updateCardStyle() {
+                const card = document.querySelector('.main-card');
+                if (!card) return;
+                
+                const rotation = this.dragOffset.x * 0.08;
+                const scale = this.isDragging ? 1.05 : 1;
+                const opacity = Math.max(0.6, 1 - Math.abs(this.dragOffset.x) / 300);
+                
+                const transition = this.isDragging || this.isAnimating ? 'none' : 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                
+                card.style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px) rotate(${rotation}deg) scale(${scale})`;
+                card.style.opacity = opacity;
+                card.style.transition = transition;
+                card.style.zIndex = '10';
+            }
+            
+            updateIndicators() {
+                const leftIndicator = document.querySelector('.indicator.left');
+                const rightIndicator = document.querySelector('.indicator.right');
+                
+                if (leftIndicator && rightIndicator) {
+                    const threshold = 50;
+                    
+                    const leftOpacity = Math.max(0, Math.min(0.9, -this.dragOffset.x / threshold));
+                    const rightOpacity = Math.max(0, Math.min(0.9, this.dragOffset.x / threshold));
+                    
+                    leftIndicator.style.opacity = leftOpacity;
+                    rightIndicator.style.opacity = rightOpacity;
+                }
+            }
+            
+            showFeedback() {
+                const overlay = document.querySelector('.feedback-overlay');
+                const card = document.querySelector('.main-card');
+                if (overlay && card) {
+                    // Nettoyer les classes précédentes
+                    overlay.className = 'feedback-overlay';
+                    card.className = 'main-card';
+                    
+                    // Ajouter les bonnes classes selon le résultat
+                    if (this.feedbackState === 'correct') {
+                        overlay.classList.add('correct');
+                        card.classList.add('feedback-correct');
+                    } else if (this.feedbackState === 'incorrect') {
+                        overlay.classList.add('incorrect');
+                        card.classList.add('feedback-incorrect');
+                    }
+                    
+                    overlay.style.display = 'flex';
+                    
+                    // Régénérer le contenu pour avoir les bonnes icônes
+                    const feedbackContent = overlay.querySelector('.feedback-content');
+                    if (feedbackContent) {
+                        feedbackContent.innerHTML = `
+                            <div class="feedback-icon">
+                                ${this.feedbackState === 'correct' ? 
+                                    '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : 
+                                    '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>'
+                                }
+                            </div>
+                            <div class="feedback-text">
+                                ${this.feedbackState === 'correct' ? 'CORRECT !' : 'INCORRECT !'}
+                            </div>
+                            <div class="feedback-subtext">
+                                ${this.feedbackState === 'correct' ? '+1 point' : 'Dommage...'}
+                            </div>
+                        `;
+                    }
+                    
+                    if (this.feedbackState === 'correct') {
+                        this.createParticles();
+                    }
+                }
+            }
+            
+            hideFeedback() {
+                const overlay = document.querySelector('.feedback-overlay');
+                const card = document.querySelector('.main-card');
+                if (overlay && card) {
+                    overlay.style.display = 'none';
+                    card.className = 'main-card';
+                }
+            }
+            
+            createParticles() {
+                const particlesContainer = document.querySelector('.particles');
+                if (!particlesContainer) return;
+                
+                particlesContainer.innerHTML = '';
+                
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = `${20 + (i * 10)}%`;
+                    particle.style.top = `${30 + (i % 3) * 20}%`;
+                    particle.style.animationDelay = `${i * 100}ms`;
+                    particle.style.animationDuration = '1s';
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            resetGame() {
+                this.currentCard = 0;
+                this.score = 0;
+                this.gameEnded = false;
+                this.dragOffset = { x: 0, y: 0 };
+                this.answered = [];
+                this.isAnimating = false;
+                this.feedbackState = null;
+                this.render();
+            }
+            
+            bindEvents() {
+                document.addEventListener('mousemove', (e) => {
+                    if (this.isDragging) {
+                        this.handleMove(e.clientX, e.clientY);
+                    }
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    if (this.isDragging) {
+                        this.handleEnd();
+                    }
+                });
+            }
+            
+            render() {
+                const app = document.getElementById('app');
+                
+                if (this.gameEnded) {
+                    app.innerHTML = this.renderEndScreen();
+                    this.bindEndScreenEvents();
+                } else {
+                    app.innerHTML = this.renderGameScreen();
+                    this.bindGameEvents();
+                }
+            }
+            
+            renderEndScreen() {
+                return `
+                    <div class="container">
+                        <div class="end-screen">
+                            <div class="trophy">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                    <path d="M4 22h16"/>
+                                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                </svg>
+                            </div>
+                            <h2 class="end-title">Quiz Terminé !</h2>
+                            <p class="final-score">
+                                Score : <span class="score-highlight">${this.score}/${this.questions.length}</span>
+                            </p>
+                            
+                            <div class="results">
+                                ${this.answered.map((answer, index) => `
+                                    <div class="result-item ${answer.correct ? 'correct' : 'incorrect'}">
+                                        <p class="result-question">${answer.question}</p>
+                                        <p class="result-explanation">${answer.explanation}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <button id="reset-btn" class="reset-btn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                    <path d="M3 3v5h5"/>
+                                </svg>
+                                Rejouer
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            renderGameScreen() {
+                const question = this.questions[this.currentCard];
+                
+                return `
+                    <div class="container">
+                        <div class="header">
+                            <h1 class="title">Quiz Swipe</h1>
+                            <div class="stats">
+                                <span class="stat">${this.currentCard + 1}/${this.questions.length}</span>
+                                <span class="stat">Score: ${this.score}</span>
+                            </div>
+                        </div>
+
+                        <div class="card-area">
+                            <div class="feedback-overlay">
+                                <div class="feedback-content">
+                                    <div class="feedback-icon">
+                                        ${this.feedbackState === 'correct' ? 
+                                            '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : 
+                                            '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>'
+                                        }
+                                    </div>
+                                    <div class="feedback-text">
+                                        ${this.feedbackState === 'correct' ? 'CORRECT !' : 'INCORRECT !'}
+                                    </div>
+                                    <div class="feedback-subtext">
+                                        ${this.feedbackState === 'correct' ? '+1 point' : 'Dommage...'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${this.currentCard < this.questions.length - 1 ? `
+                                <div class="next-card">
+                                    <p class="next-card-text">Question suivante...</p>
+                                </div>
+                            ` : ''}
+
+                            <div class="indicator left">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 6 6 18"/>
+                                    <path d="M6 6l12 12"/>
+                                </svg>
+                                FAUX
+                            </div>
+                            
+                            <div class="indicator right">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 6 9 17l-5-5"/>
+                                </svg>
+                                VRAI
+                            </div>
+
+                            <div class="main-card">
+                                <div class="card-indicator"></div>
+                                
+                                <h3 class="question">${question.question}</h3>
+                                
+                                <div class="instructions">
+                                    <div class="instruction left">
+                                        <div class="instruction-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m15 18-6-6 6-6"/>
+                                            </svg>
+                                        </div>
+                                        <span class="instruction-text">Swipe gauche</span>
+                                        <span class="instruction-label">FAUX</span>
+                                    </div>
+                                    
+                                    <div class="divider"></div>
+                                    
+                                    <div class="instruction right">
+                                        <div class="instruction-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="m9 18 6-6-6-6"/>
+                                            </svg>
+                                        </div>
+                                        <span class="instruction-text">Swipe droite</span>
+                                        <span class="instruction-label">VRAI</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="particles"></div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button id="false-btn" class="action-btn false">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 6 6 18"/>
+                                    <path d="M6 6l12 12"/>
+                                </svg>
+                            </button>
+                            <button id="true-btn" class="action-btn true">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 6 9 17l-5-5"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <p class="help-text">
+                            Glissez la carte ou utilisez les boutons pour répondre
+                        </p>
+                    </div>
+                `;
+            }
+            
+            bindEndScreenEvents() {
+                const resetBtn = document.getElementById('reset-btn');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => this.resetGame());
+                }
+            }
+            
+            bindGameEvents() {
+                const card = document.querySelector('.main-card');
+                const falseBtn = document.getElementById('false-btn');
+                const trueBtn = document.getElementById('true-btn');
+                
+                if (card) {
+                    card.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        this.handleStart(e.clientX, e.clientY);
+                    });
+                    
+                    card.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        this.handleStart(touch.clientX, touch.clientY);
+                    });
+                    
+                    card.addEventListener('touchmove', (e) => {
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        this.handleMove(touch.clientX, touch.clientY);
+                    });
+                    
+                    card.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.handleEnd();
+                    });
+                }
+                
+                if (falseBtn) {
+                    falseBtn.addEventListener('click', () => {
+                        if (!this.isAnimating) this.animateCardExit(false);
+                    });
+                }
+                
+                if (trueBtn) {
+                    trueBtn.addEventListener('click', () => {
+                        if (!this.isAnimating) this.animateCardExit(true);
+                    });
+                }
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            new SwipeQuizGame();
+        });
+    </script>
+</body>
+</html>
