@@ -45,5 +45,10 @@ Ce projet est une application web autonome qui propose un quiz « vrai ou faux �
 ## Utilisation
 Servez le dossier via un petit serveur web local (ex. `npx serve .` ou `python -m http.server`) puis ouvrez `Swipe quiz.html` dans un navigateur moderne ; aucune dépendance externe n'est nécessaire.
 
+## Backoffice de gestion
+- Le fichier `backoffice.html` fournit une interface complète pour gérer les cartes : création, modification et suppression.
+- Vous pouvez importer un fichier `cards.json` existant, le modifier et l'exporter à nouveau en un clic.
+- Le bouton « Charger depuis cards.json » relit directement le fichier du dépôt pour partir de la base actuelle.
+
 ## Version
-Footer mis à jour : **Version 1.1.0**.
+Footer mis à jour : **Version 1.2.0**.

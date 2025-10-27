@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backoffice Quiz Swipe</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --primary: #7c3aed;
+            --primary-light: #a855f7;
+            --danger: #ef4444;
+            --success: #10b981;
+            --surface: rgba(255, 255, 255, 0.85);
+            --surface-dark: rgba(15, 23, 42, 0.85);
+            --text-color: #0f172a;
+            --text-on-dark: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #fce7f3, #ddd6fe 45%, #e0f2fe);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 2rem 1.5rem 3rem;
+            box-shadow: 0 15px 40px rgba(124, 58, 237, 0.25);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+            font-weight: 700;
+        }
+
+        header p {
+            margin-top: 0.75rem;
+            max-width: 50rem;
+            line-height: 1.6;
+        }
+
+        main {
+            flex: 1;
+            margin: -2.5rem auto 0;
+            width: min(1100px, 95vw);
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: 1fr 1.2fr;
+        }
+
+        @media (max-width: 980px) {
+            main {
+                grid-template-columns: 1fr;
+                margin-top: -2rem;
+            }
+        }
+
+        section {
+            background: var(--surface);
+            backdrop-filter: blur(14px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            section {
+                background: var(--surface-dark);
+                color: var(--text-on-dark);
+                box-shadow: 0 20px 40px rgba(2, 6, 23, 0.6);
+            }
+
+            body {
+                background: radial-gradient(circle at top left, #312e81, #1e1b4b 45%, #0f172a);
+                color: var(--text-on-dark);
+            }
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: rgba(15, 23, 42, 0.7);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            h2 span {
+                color: rgba(248, 250, 252, 0.6);
+            }
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            border-radius: 0.85rem;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+            transition: border 0.2s ease, box-shadow 0.2s ease;
+            resize: vertical;
+            min-height: 3rem;
+        }
+
+        textarea {
+            min-height: 6rem;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        button {
+            border: none;
+            border-radius: 999px;
+            padding: 0.7rem 1.4rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            box-shadow: 0 15px 35px rgba(124, 58, 237, 0.35);
+        }
+
+        button.secondary {
+            background: rgba(15, 23, 42, 0.08);
+            color: inherit;
+        }
+
+        button.danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 35px rgba(15, 23, 42, 0.18);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+            vertical-align: top;
+        }
+
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(124, 58, 237, 0.08);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            padding: 0.2rem 0.75rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .badge.false {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: rgba(15, 23, 42, 0.6);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .empty-state {
+                color: rgba(248, 250, 252, 0.6);
+            }
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .toolbar-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .file-input-label {
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.08);
+            padding: 0.65rem 1.25rem;
+            cursor: pointer;
+        }
+
+        .file-input-label input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .status {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.9rem;
+            background: rgba(15, 23, 42, 0.05);
+            font-size: 0.9rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .status {
+                background: rgba(248, 250, 252, 0.08);
+            }
+        }
+
+        footer {
+            margin: 2rem auto 3rem;
+            text-align: center;
+            color: rgba(15, 23, 42, 0.6);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            footer {
+                color: rgba(248, 250, 252, 0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Backoffice des cartes Quiz Swipe</h1>
+        <p>Importez, créez, modifiez et exportez vos cartes très facilement. Cet outil produit un fichier <code>cards.json</code> parfaitement compatible avec l'application « Swipe Quiz ».</p>
+    </header>
+
+    <main>
+        <section aria-labelledby="edition-title">
+            <h2 id="edition-title">Édition d'une carte <span id="edition-mode">(ajout)</span></h2>
+            <form id="card-form" class="form-grid">
+                <div>
+                    <label for="question">Question</label>
+                    <textarea id="question" name="question" required placeholder="Saisissez ici la question à afficher sur la carte..."></textarea>
+                </div>
+                <div>
+                    <label for="answer">Réponse</label>
+                    <select id="answer" name="answer" required>
+                        <option value="true">Vrai</option>
+                        <option value="false">Faux</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="explanation">Explication</label>
+                    <textarea id="explanation" name="explanation" required placeholder="Justifiez la réponse pour aider les joueurs à comprendre."></textarea>
+                </div>
+                <div class="actions">
+                    <button type="submit" class="primary" id="save-button">Ajouter la carte</button>
+                    <button type="button" class="secondary" id="reset-form">Réinitialiser</button>
+                    <button type="button" class="danger" id="delete-card" hidden>Supprimer</button>
+                </div>
+            </form>
+            <div class="status" id="form-status" role="status" aria-live="polite"></div>
+        </section>
+
+        <section aria-labelledby="liste-title">
+            <div class="toolbar">
+                <h2 id="liste-title">Cartes enregistrées <span id="cards-count">(0)</span></h2>
+                <div class="toolbar-group">
+                    <label class="file-input-label">
+                        <span>Importer un fichier</span>
+                        <input type="file" id="file-input" accept="application/json">
+                    </label>
+                    <button type="button" class="secondary" id="load-server">Charger depuis cards.json</button>
+                    <button type="button" class="primary" id="export">Exporter en JSON</button>
+                </div>
+            </div>
+            <div class="table-wrapper" role="region" aria-live="polite" aria-label="Liste des cartes">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Question</th>
+                            <th scope="col">Réponse</th>
+                            <th scope="col">Explication</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cards-table-body">
+                        <tr class="empty-state">
+                            <td colspan="4">Ajoutez une carte ou importez un fichier pour commencer.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>Version 1.2.0</footer>
+
+    <script>
+        const state = {
+            cards: [],
+            editingIndex: null
+        };
+
+        const form = document.getElementById('card-form');
+        const questionField = document.getElementById('question');
+        const answerField = document.getElementById('answer');
+        const explanationField = document.getElementById('explanation');
+        const editionMode = document.getElementById('edition-mode');
+        const saveButton = document.getElementById('save-button');
+        const resetButton = document.getElementById('reset-form');
+        const deleteButton = document.getElementById('delete-card');
+        const statusZone = document.getElementById('form-status');
+        const tableBody = document.getElementById('cards-table-body');
+        const cardsCount = document.getElementById('cards-count');
+        const fileInput = document.getElementById('file-input');
+        const exportButton = document.getElementById('export');
+        const loadServerButton = document.getElementById('load-server');
+
+        function resetForm() {
+            form.reset();
+            state.editingIndex = null;
+            editionMode.textContent = '(ajout)';
+            saveButton.textContent = 'Ajouter la carte';
+            deleteButton.hidden = true;
+            statusZone.textContent = '';
+            questionField.focus();
+        }
+
+        function setStatus(message, type = 'info') {
+            statusZone.textContent = message;
+            statusZone.dataset.type = type;
+        }
+
+        function renderCards() {
+            cardsCount.textContent = `(${state.cards.length})`;
+            tableBody.innerHTML = '';
+
+            if (state.cards.length === 0) {
+                tableBody.innerHTML = `<tr class="empty-state"><td colspan="4">Ajoutez une carte ou importez un fichier pour commencer.</td></tr>`;
+                return;
+            }
+
+            state.cards.forEach((card, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${escapeHtml(card.question)}</td>
+                    <td>
+                        <span class="badge ${card.answer ? 'true' : 'false'}">${card.answer ? 'Vrai' : 'Faux'}</span>
+                    </td>
+                    <td>${escapeHtml(card.explanation)}</td>
+                    <td>
+                        <button type="button" class="secondary" data-action="edit" data-index="${index}">Éditer</button>
+                        <button type="button" class="danger" data-action="delete" data-index="${index}">Supprimer</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function loadCardIntoForm(index) {
+            const card = state.cards[index];
+            questionField.value = card.question;
+            answerField.value = card.answer ? 'true' : 'false';
+            explanationField.value = card.explanation;
+            state.editingIndex = index;
+            editionMode.textContent = `(modification #${index + 1})`;
+            saveButton.textContent = 'Mettre à jour la carte';
+            deleteButton.hidden = false;
+            setStatus('Carte chargée en édition. Modifiez les champs puis sauvegardez.');
+        }
+
+        function upsertCard(event) {
+            event.preventDefault();
+            const question = questionField.value.trim();
+            const explanation = explanationField.value.trim();
+            const answer = answerField.value === 'true';
+
+            if (!question || !explanation) {
+                setStatus('La question et l\'explication sont obligatoires.', 'error');
+                return;
+            }
+
+            const newCard = { question, answer, explanation };
+
+            if (state.editingIndex === null) {
+                state.cards.push(newCard);
+                setStatus('Carte ajoutée avec succès.', 'success');
+            } else {
+                state.cards[state.editingIndex] = newCard;
+                setStatus(`Carte #${state.editingIndex + 1} mise à jour.`, 'success');
+            }
+
+            renderCards();
+            resetForm();
+        }
+
+        function removeCard(index) {
+            state.cards.splice(index, 1);
+            setStatus(`Carte supprimée. ${state.cards.length} restantes.`, 'warning');
+            renderCards();
+            resetForm();
+        }
+
+        function exportCards() {
+            if (state.cards.length === 0) {
+                setStatus('Ajoutez au moins une carte avant d\'exporter.', 'error');
+                return;
+            }
+
+            const dataStr = JSON.stringify({ cards: state.cards }, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'cards.json';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+            setStatus('Export effectué : un fichier cards.json a été téléchargé.', 'success');
+        }
+
+        function importFromFile(file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const parsed = JSON.parse(event.target.result);
+                    if (!parsed.cards || !Array.isArray(parsed.cards)) {
+                        throw new Error('Structure inattendue. Le fichier doit contenir une clé "cards" avec un tableau.');
+                    }
+                    state.cards = parsed.cards.map(card => ({
+                        question: String(card.question ?? '').trim(),
+                        answer: Boolean(card.answer),
+                        explanation: String(card.explanation ?? '').trim()
+                    })).filter(card => card.question && card.explanation);
+                    renderCards();
+                    resetForm();
+                    setStatus(`Import réussi : ${state.cards.length} carte(s) chargée(s).`, 'success');
+                } catch (error) {
+                    console.error(error);
+                    setStatus('Impossible de lire ce fichier : ' + error.message, 'error');
+                }
+            };
+            reader.onerror = () => {
+                setStatus('Erreur lors de la lecture du fichier.', 'error');
+            };
+            reader.readAsText(file);
+        }
+
+        function loadFromServer() {
+            fetch('cards.json', { cache: 'no-store' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Statut ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.cards || !Array.isArray(data.cards)) {
+                        throw new Error('Le fichier distant ne respecte pas la structure attendue.');
+                    }
+                    state.cards = data.cards.map(card => ({
+                        question: String(card.question ?? '').trim(),
+                        answer: Boolean(card.answer),
+                        explanation: String(card.explanation ?? '').trim()
+                    })).filter(card => card.question && card.explanation);
+                    renderCards();
+                    resetForm();
+                    setStatus(`Lecture effectuée depuis cards.json (${state.cards.length} carte(s)).`, 'success');
+                })
+                .catch(error => {
+                    console.error(error);
+                    setStatus('Impossible de charger cards.json : ' + error.message, 'error');
+                });
+        }
+
+        tableBody.addEventListener('click', (event) => {
+            const button = event.target.closest('button');
+            if (!button) return;
+            const index = Number.parseInt(button.dataset.index, 10);
+            if (Number.isNaN(index)) return;
+
+            if (button.dataset.action === 'edit') {
+                loadCardIntoForm(index);
+            } else if (button.dataset.action === 'delete') {
+                if (confirm('Supprimer définitivement cette carte ?')) {
+                    removeCard(index);
+                }
+            }
+        });
+
+        form.addEventListener('submit', upsertCard);
+        resetButton.addEventListener('click', resetForm);
+        deleteButton.addEventListener('click', () => {
+            if (state.editingIndex !== null && confirm('Supprimer définitivement cette carte ?')) {
+                removeCard(state.editingIndex);
+            }
+        });
+
+        exportButton.addEventListener('click', exportCards);
+        loadServerButton.addEventListener('click', loadFromServer);
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            importFromFile(file);
+            fileInput.value = '';
+        });
+
+        resetForm();
+    </script>
+</body>
+</html>
