@@ -338,6 +338,19 @@
             text-align: center;
         }
 
+        .footer {
+            margin-top: 2rem;
+            color: rgba(255,255,255,0.75);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            text-align: center;
+        }
+
+        .footer.light {
+            color: #6b7280;
+        }
+
         .particles {
             position: absolute;
             inset: 0;
@@ -832,10 +845,11 @@
                                 Rejouer
                             </button>
                         </div>
+                        <footer class="footer light">Version 1.0.1</footer>
                     </div>
                 `;
             }
-            
+
             renderGameScreen() {
                 const question = this.questions[this.currentCard];
                 
@@ -938,6 +952,7 @@
                         <p class="help-text">
                             Glissez la carte ou utilisez les boutons pour répondre
                         </p>
+                        <footer class="footer">Version 1.0.1</footer>
                     </div>
                 `;
             }
